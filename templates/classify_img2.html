@@ -1,0 +1,22 @@
+
+{% extends "master.html" %}
+
+
+{% block content %}
+
+{% if predictions %}
+<table>
+	<tr>
+		<th>Label</th>
+		<th> certainty </th>
+	</tr>
+	{% for label, certainty in predictions %}
+		<tr>
+			<td>{{ label }}</td>
+			<td>{{ certainty }}</td>
+		</tr>
+	{% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

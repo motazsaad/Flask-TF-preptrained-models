@@ -1,0 +1,21 @@
+in big data (3Vs) 
+
+Volume الحجم
+volecity السرعة التسارع 
+varity التنوع صيغة البيانات والمصادر 
+text, stuctured data, ..... 
+
+BigData frameworks: Spark, Hadoop
+two main tasks: 
+1) distribute data (storage) on cluster (100 machine) 
+2) distribute processing 
+
+"scale out" instead of "scale in"
+
+- scale in: add more cpu/ram/storage to a machine (limited)
+- scale out: add more machines (scalable) (140 machine: make use of 140 cpu and the ram of 140 machine, and storage of 140 machines) 
+
+
+Process: 
+1) Map : distribute task on machines 
+2) Reduce: collect result 

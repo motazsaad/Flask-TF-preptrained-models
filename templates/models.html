@@ -1,0 +1,29 @@
+
+{% extends "master.html" %}
+
+
+{% block content %}
+
+<form action="" method="post">
+    <input type="text" placeholder="URL" name="url" value="{{ request.form.url }}">
+    <input class="btn btn-default" type="submit" value="Classify">
+</form>
+
+<br>
+
+{% if classifications %}
+<table>
+	<tr>
+		<th>Model</th>
+		<th>Classification</th>
+	</tr>
+	{% for model, label in classifications.items() %}
+		<tr>
+			<td>{{ word }}</td>
+			<td>{{ freq }}</td>
+		</tr>
+	{% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}
