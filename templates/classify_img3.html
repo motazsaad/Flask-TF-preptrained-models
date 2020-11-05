@@ -11,18 +11,18 @@
 
 <br>
 
-{% if top_labels %}
+{% if labels %}
 <img src={{url}} alt="The image" style="width:300px;height:auto;">
 
 <table>
 	<tr>
-		<th>Label</th>
-		<th> certainty </th>
+		<th>Model</th>
+		<th> Label </th>
 	</tr>
-	{% for label, certainty in top_labels.items() %}
+	{% for model, label in labels.items() %}
 		<tr>
+			<td>{{ model }}</td>
 			<td>{{ label }}</td>
-			<td>{{ certainty }}</td>
 		</tr>
 	{% endfor %}
 </table>

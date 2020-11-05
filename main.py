@@ -21,57 +21,98 @@ def home():
 
 
 ##################################
-model_url = "https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4"
-classifier_model = model_url
 IMAGE_SHAPE = (224, 224)
 
-classifier = tf.keras.Sequential([
-    hub.KerasLayer(classifier_model, input_shape=IMAGE_SHAPE+(3,))
+mobilenet_v2 = tf.keras.Sequential([
+    hub.KerasLayer(
+    "https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4", 
+    input_shape=IMAGE_SHAPE+(3,))
 ])
+resnet_50 = tf.keras.Sequential([
+    hub.KerasLayer(
+    "https://tfhub.dev/tensorflow/resnet_50/classification/1", 
+    input_shape=IMAGE_SHAPE+(3,))
+])
+
+inception_v3 = tf.keras.Sequential([
+    hub.KerasLayer(
+    "https://tfhub.dev/google/imagenet/inception_v3/classification/4", 
+    input_shape=IMAGE_SHAPE+(3,))
+])
+
+
 labels_url = 'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
 #labels_path = tf.keras.utils.get_file('ImageNetLabels.txt',)
 imagenet_labels = np.array(open('ImageNetLabels.txt').read().splitlines())
 
+models = {'mobilenet_v2': mobilenet_v2, 'resnet_50': resnet_50, 'inception_v3': inception_v3}
 
-@app.route('/classify-img1/')
+def get_labels(image):
+    results = {}
+    for model_name, model in models.items():
+        preds = model.predict(img[np.newaxis, ...])
+        predicted_class = np.argmax(result[0], axis=-1)
+        label = imagenet_labels[predicted_class]
+        results[model_name] = label
+    
+    return results 
+    
+
+@app.route('/classify-img1/', methods=['GET', 'POST'])
 def classify_img():
     url = ''
+    top_labels = {}
     if request.method == 'POST':
         url = request.form['url']
-        # get image and preprocess (open, resize, convert to gray scale)
-        response = requests.get(url)
-        #grace_hopper = tf.keras.utils.get_file('./image.jpg', url)
-        grace_hopper = Image.open(BytesIO(response.content)).resize(IMAGE_SHAPE)
-        grace_hopper = np.array(grace_hopper)/255.0
-        # classify 
-        result = classifier.predict(grace_hopper[np.newaxis, ...])
-        predicted_class = np.argmax(result[0], axis=-1)
-        top_3_classes = np.argpartition(a, -3)[-3:]
-        top_3_classes_labels = result[0][top_3_classes]
-        #predicted_class_name = imagenet_labels[predicted_class]
-        #return '<h1> prediction: {} </h1>'.format(predicted_class_name)
-        return render_template('classify_img.html', zip(top_3_classes_labels, top_3_classes))
+        if url:
+            print('url', url)
+            response = requests.get(url)
+            img = Image.open(BytesIO(response.content)).resize(IMAGE_SHAPE)
+            img = np.array(img)/255.0
+            # classify 
+            result = mobilenet_v2.predict(img[np.newaxis, ...])
+            cert =  np.exp(result[0])/sum(np.exp(result[0]))
+            predicted_class = np.argmax(result[0], axis=-1)
+            label = imagenet_labels[predicted_class]
+            top_index = result[0].argsort()[-3:][::-1]
+            top_labels = { imagenet_labels[i]: cert[i] for i in top_index }
+    
+    print(top_labels)
+    return render_template('classify_img1.html', top_labels=top_labels, url=url)
 
 @app.route('/classify-img2/')
 def classify_img2():
     url = request.args.get('url')
-    # get image and preprocess (open, resize, convert to gray scale)
     response = requests.get(url)
-    #grace_hopper = tf.keras.utils.get_file('./image.jpg', url)
-    grace_hopper = Image.open(BytesIO(response.content)).resize(IMAGE_SHAPE)
-    grace_hopper = np.array(grace_hopper)/255.0
+    img = Image.open(BytesIO(response.content)).resize(IMAGE_SHAPE)
+    img = np.array(img)/255.0
     # classify 
-    result = classifier.predict(grace_hopper[np.newaxis, ...])
+    result = mobilenet_v2.predict(img[np.newaxis, ...])
+    cert =  np.exp(result[0])/sum(np.exp(result[0]))
     predicted_class = np.argmax(result[0], axis=-1)
-    top_3_classes = np.argpartition(result[0], -3)[-3:]
-    top_3_classes_labels = result[0][top_3_classes]
-    top_3_classes_labels = [imagenet_labels[predicted_class] for predicted_class in top_3_classes_labels]
-    #predicted_class_name = imagenet_labels[predicted_class]
-    #return '<h1> prediction: {} </h1>'.format(predicted_class_name)
-    # return render_template('classify_img2.html', predictions=zip(top_3_classes_labels, top_3_classes))
-    return render_template('classify_img3.html', predicted_class=predicted_class)
+    label = imagenet_labels[predicted_class]
+    top_index = result[0].argsort()[-3:][::-1]
+    top_labels = { imagenet_labels[i]: cert[i] for i in top_index }
+    print(top_labels)
+    return render_template('classify_img2.html', top_labels=top_labels)
 
 
+@app.route('/classify-img3/', methods=['GET', 'POST'])
+def classify_img3():
+    url = ''
+    labels = {}
+    if request.method == 'POST':
+        url = request.form['url']
+        if url:
+            print('url', url)
+            response = requests.get(url)
+            img = Image.open(BytesIO(response.content)).resize(IMAGE_SHAPE)
+            img = np.array(img)/255.0
+            # classify 
+            labels = get_labels(img)
+    
+    print(labels)
+    return render_template('classify_img3.html', labels=labels, url=url)
 
 # step 4: run app 
 if __name__ == "__main__":  

@@ -4,13 +4,13 @@
 
 {% block content %}
 
-{% if predictions %}
+{% if top_labels %}
 <table>
 	<tr>
 		<th>Label</th>
 		<th> certainty </th>
 	</tr>
-	{% for label, certainty in predictions %}
+	{% for label, certainty in top_labels.items() %}
 		<tr>
 			<td>{{ label }}</td>
 			<td>{{ certainty }}</td>
