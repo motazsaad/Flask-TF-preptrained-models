@@ -28,11 +28,11 @@ mobilenet_v2 = tf.keras.Sequential([
     "https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4", 
     input_shape=IMAGE_SHAPE+(3,))
 ])
-resnet_50 = tf.keras.Sequential([
-    hub.KerasLayer(
-    "https://tfhub.dev/tensorflow/resnet_50/classification/1", 
-    input_shape=IMAGE_SHAPE+(3,))
-])
+# resnet_50 = tf.keras.Sequential([
+    # hub.KerasLayer(
+    # "https://tfhub.dev/tensorflow/resnet_50/classification/1", 
+    # input_shape=IMAGE_SHAPE+(3,))
+# ])
 
 inception_v3 = tf.keras.Sequential([
     hub.KerasLayer(
@@ -45,13 +45,14 @@ labels_url = 'https://storage.googleapis.com/download.tensorflow.org/data/ImageN
 #labels_path = tf.keras.utils.get_file('ImageNetLabels.txt',)
 imagenet_labels = np.array(open('ImageNetLabels.txt').read().splitlines())
 
-models = {'mobilenet_v2': mobilenet_v2, 'resnet_50': resnet_50, 'inception_v3': inception_v3}
+# models = {'mobilenet_v2': mobilenet_v2, 'resnet_50': resnet_50, 'inception_v3': inception_v3}
+models = {'mobilenet_v2': mobilenet_v2, 'inception_v3': inception_v3}
 
 def get_labels(image):
     results = {}
     for model_name, model in models.items():
-        preds = model.predict(img[np.newaxis, ...])
-        predicted_class = np.argmax(result[0], axis=-1)
+        preds = model.predict(image[np.newaxis, ...])
+        predicted_class = np.argmax(preds[0], axis=-1)
         label = imagenet_labels[predicted_class]
         results[model_name] = label
     
@@ -106,8 +107,10 @@ def classify_img3():
         if url:
             print('url', url)
             response = requests.get(url)
+            print('get image', response.status_code)
             img = Image.open(BytesIO(response.content)).resize(IMAGE_SHAPE)
             img = np.array(img)/255.0
+            print(img.shape)
             # classify 
             labels = get_labels(img)
     
@@ -116,5 +119,5 @@ def classify_img3():
 
 # step 4: run app 
 if __name__ == "__main__":  
-  app.run(debug=True)
+  app.run()
 
