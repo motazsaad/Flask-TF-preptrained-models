@@ -4,11 +4,11 @@ from flask import Flask, render_template, request
  
 
 from io import BytesIO
-import requests
+import requests # https://requests.readthedocs.io/
 import numpy as np 
 import PIL.Image as Image
 import tensorflow as tf
-import tensorflow_hub as hub
+import tensorflow_hub as hub # https://tfhub.dev/
 
 
 # step 2: define Flask app 
@@ -41,8 +41,7 @@ inception_v3 = tf.keras.Sequential([
 ])
 
 
-labels_url = 'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
-#labels_path = tf.keras.utils.get_file('ImageNetLabels.txt',)
+#'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
 imagenet_labels = np.array(open('ImageNetLabels.txt').read().splitlines())
 
 # models = {'mobilenet_v2': mobilenet_v2, 'resnet_50': resnet_50, 'inception_v3': inception_v3}
@@ -72,7 +71,7 @@ def classify_img():
             img = np.array(img)/255.0
             # classify 
             result = mobilenet_v2.predict(img[np.newaxis, ...])
-            cert =  np.exp(result[0])/sum(np.exp(result[0]))
+            cert =  np.exp(result[0])/sum(np.exp(result[0])) # softmax 
             predicted_class = np.argmax(result[0], axis=-1)
             label = imagenet_labels[predicted_class]
             top_index = result[0].argsort()[-3:][::-1]
